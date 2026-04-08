@@ -56,6 +56,23 @@
       background: #f9f9f9;
       padding: 15px;
       border-radius: 12px;
+      margin-bottom: 20px;
+    }
+    .open-btn {
+      background: linear-gradient(135deg, #ff6b35, #ff8f65);
+      color: #fff;
+      border: none;
+      border-radius: 50rpx;
+      padding: 24rpx 60rpx;
+      font-size: 32rpx;
+      font-weight: bold;
+      cursor: pointer;
+      display: inline-block;
+      text-decoration: none;
+      box-shadow: 0 4rpx 16rpx rgba(255, 107, 53, 0.3);
+    }
+    .open-btn:active {
+      transform: scale(0.98);
     }
     .loading {
       display: none;
@@ -72,55 +89,83 @@
     <div class="subtitle">请选择您的桌号开始点餐</div>
     
     <div class="table-grid">
-      <button class="table-btn" onclick="goOrder(1)">01</button>
-      <button class="table-btn" onclick="goOrder(2)">02</button>
-      <button class="table-btn" onclick="goOrder(3)">03</button>
-      <button class="table-btn" onclick="goOrder(4)">04</button>
-      <button class="table-btn" onclick="goOrder(5)">05</button>
-      <button class="table-btn" onclick="goOrder(6)">06</button>
-      <button class="table-btn" onclick="goOrder(7)">07</button>
-      <button class="table-btn" onclick="goOrder(8)">08</button>
-      <button class="table-btn" onclick="goOrder(9)">09</button>
-      <button class="table-btn" onclick="goOrder(10)">10</button>
-      <button class="table-btn" onclick="goOrder(11)">11</button>
-      <button class="table-btn" onclick="goOrder(12)">12</button>
+      <button class="table-btn" onclick="selectTable(1)">01</button>
+      <button class="table-btn" onclick="selectTable(2)">02</button>
+      <button class="table-btn" onclick="selectTable(3)">03</button>
+      <button class="table-btn" onclick="selectTable(4)">04</button>
+      <button class="table-btn" onclick="selectTable(5)">05</button>
+      <button class="table-btn" onclick="selectTable(6)">06</button>
+      <button class="table-btn" onclick="selectTable(7)">07</button>
+      <button class="table-btn" onclick="selectTable(8)">08</button>
+      <button class="table-btn" onclick="selectTable(9)">09</button>
+      <button class="table-btn" onclick="selectTable(10)">10</button>
+      <button class="table-btn" onclick="selectTable(11)">11</button>
+      <button class="table-btn" onclick="selectTable(12)">12</button>
     </div>
     
-    <div class="tips">
-      👆 点击您的桌号即可跳转到小程序开始点餐
+    <div class="tips" id="tips">
+      👆 点击您的桌号，然后点击下方按钮打开小程序
     </div>
     
-    <div class="loading" id="loading">正在跳转小程序...</div>
+    <a class="open-btn" id="openBtn" href="javascript:void(0);">打开小程序</a>
+    
+    <div class="loading" id="loading"></div>
   </div>
 
   <script>
     // ==================== 配置区 ====================
-    // 替换为你的小程序原始ID（在微信公众平台 -> 设置 -> 基本设置 中查看）
-    const MINI_APP_ID = 'gh_e801700a707a';  // 例如：gh_abc123def456
+    // 替换为你小程序的原始ID
+    const MINI_APP_ID = 'gh_xxxxxxxx';  // 例如：gh_abc123def456
     // ================================================
 
-    function goOrder(tableNo) {
-      const table = String(tableNo).padStart(2, '0');
-      document.getElementById('loading').style.display = 'block';
+    let selectedTable = '';
+
+    function selectTable(tableNo) {
+      selectedTable = String(tableNo).padStart(2, '0');
+      document.getElementById('tips').innerHTML = `✅ 已选择：<strong>${selectedTable} 号桌</strong><br>点击下方按钮打开小程序`;
       
-      // 尝试跳转小程序
-      const jumpUrl = `miniprogram://pages/index/index?table=${table}`;
-      
-      // 方法1：尝试直接跳转
-      window.location.href = jumpUrl;
-      
-      // 延迟后显示提示
-      setTimeout(() => {
-        document.getElementById('loading').innerHTML = 
-          '如果没有自动跳转，请：<br>1. 长按下方二维码<br>2. 选择「识别二维码」';
-      }, 1000);
+      // 高亮选中按钮
+      document.querySelectorAll('.table-btn').forEach(btn => btn.style.borderColor = 'transparent');
+      event.target.style.borderColor = '#ff6b35';
+      event.target.style.background = '#fff0eb';
+      event.target.style.color = '#ff6b35';
     }
+
+    document.getElementById('openBtn').addEventListener('click', function() {
+      if (!selectedTable) {
+        alert('请先选择您的桌号！');
+        return;
+      }
+      
+      // 尝试多种方式打开小程序
+      const isWeixin = navigator.userAgent.toLowerCase().includes('micromessenger');
+      
+      if (isWeixin) {
+        // 微信内置浏览器
+        // 尝试复制桌号到剪贴板
+        wx.ready && wx.miniProgram.navigateTo({ url: '/pages/index/index?table=' + selectedTable });
+      } else {
+        // 普通浏览器 - 提示用户
+        const confirm = window.confirm('请按以下步骤操作：\n\n1. 打开微信\n2. 搜索小程序「智慧点餐」\n3. 进入后系统会自动识别桌号\n\n（您已选择：' + selectedTable + '号桌）');
+        
+        if (confirm) {
+          // 复制桌号
+          const input = document.createElement('input');
+          input.value = selectedTable;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+          alert('桌号 ' + selectedTable + ' 已复制到剪贴板！\n打开小程序后系统会自动识别。');
+        }
+      }
+    });
 
     // 自动检测URL参数中的桌号
     const urlParams = new URLSearchParams(window.location.search);
     const tableFromUrl = urlParams.get('table');
     if (tableFromUrl) {
-      goOrder(tableFromUrl);
+      selectTable(tableFromUrl);
     }
   </script>
 </body>
