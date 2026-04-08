@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>扫码点餐 - 智慧餐厅</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #ff6b35, #ff8f65);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .container {
+      background: #fff;
+      border-radius: 24px;
+      padding: 40px 30px;
+      max-width: 400px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+    .logo { font-size: 64px; margin-bottom: 20px; }
+    .title { font-size: 28px; font-weight: bold; color: #333; margin-bottom: 10px; }
+    .subtitle { font-size: 14px; color: #999; margin-bottom: 30px; }
+    .table-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    .table-btn {
+      background: #f5f5f5;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 20px 10px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .table-btn:hover, .table-btn:active {
+      background: #fff0eb;
+      border-color: #ff6b35;
+      color: #ff6b35;
+    }
+    .tips {
+      font-size: 12px;
+      color: #999;
+      line-height: 1.6;
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 12px;
+    }
+    .loading {
+      display: none;
+      font-size: 14px;
+      color: #666;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">🍜</div>
+    <div class="title">智慧点餐</div>
+    <div class="subtitle">请选择您的桌号开始点餐</div>
+    
+    <div class="table-grid">
+      <button class="table-btn" onclick="goOrder(1)">01</button>
+      <button class="table-btn" onclick="goOrder(2)">02</button>
+      <button class="table-btn" onclick="goOrder(3)">03</button>
+      <button class="table-btn" onclick="goOrder(4)">04</button>
+      <button class="table-btn" onclick="goOrder(5)">05</button>
+      <button class="table-btn" onclick="goOrder(6)">06</button>
+      <button class="table-btn" onclick="goOrder(7)">07</button>
+      <button class="table-btn" onclick="goOrder(8)">08</button>
+      <button class="table-btn" onclick="goOrder(9)">09</button>
+      <button class="table-btn" onclick="goOrder(10)">10</button>
+      <button class="table-btn" onclick="goOrder(11)">11</button>
+      <button class="table-btn" onclick="goOrder(12)">12</button>
+    </div>
+    
+    <div class="tips">
+      👆 点击您的桌号即可跳转到小程序开始点餐
+    </div>
+    
+    <div class="loading" id="loading">正在跳转小程序...</div>
+  </div>
+
+  <script>
+    // ==================== 配置区 ====================
+    // 替换为你的小程序原始ID（在微信公众平台 -> 设置 -> 基本设置 中查看）
+    const MINI_APP_ID = 'gh_e801700a707a';  // 例如：gh_abc123def456
+    // ================================================
+
+    function goOrder(tableNo) {
+      const table = String(tableNo).padStart(2, '0');
+      document.getElementById('loading').style.display = 'block';
+      
+      // 尝试跳转小程序
+      const jumpUrl = `miniprogram://pages/index/index?table=${table}`;
+      
+      // 方法1：尝试直接跳转
+      window.location.href = jumpUrl;
+      
+      // 延迟后显示提示
+      setTimeout(() => {
+        document.getElementById('loading').innerHTML = 
+          '如果没有自动跳转，请：<br>1. 长按下方二维码<br>2. 选择「识别二维码」';
+      }, 1000);
+    }
+
+    // 自动检测URL参数中的桌号
+    const urlParams = new URLSearchParams(window.location.search);
+    const tableFromUrl = urlParams.get('table');
+    if (tableFromUrl) {
+      goOrder(tableFromUrl);
+    }
+  </script>
+</body>
+</html>
